@@ -1,0 +1,75 @@
+{% comment %}
+
+    Search page script for Chinese, Japanese and Korean text (cjk-search_cb-add-on).
+    Used by the "search-cjk" layout, in place of js/lunr-js.html.
+
+    The search index is built when the site is built, by the cjk_index gem
+    (assets/cjk-index/search.json, from the fields marked index=true in _data/config-search.csv).
+    The results are shown the same way as js/lunr-js.html, with the matched text marked.
+
+    Needs: the cjk_index gem in the Gemfile, and in _config.yml:
+        cjk_index:
+          indexes:
+            - name: search
+              preset: collectionbuilder
+
+{% endcomment %}
+{%- assign fields = site.data.config-search -%}
+<script src="{{ '/assets/cjk-index/cjk-index.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/lunr-store.js' | relative_url }}"></script>
+<script>
+
+/* cjk_index returns the store "id" of each result; find its position in the store */
+var storePosition = {};
+store.forEach(function (s, i) { storePosition[s.id] = i; });
+var cjkIndex = CJKIndex.load({{ '/assets/cjk-index/search.json' | relative_url | jsonify }});
+
+/* search function (same name as in js/lunr-js.html, used by the search form) */
+function lunr_search () {
+    var query = searchbox.value;
+    if (!query.trim()) { resultsdiv.innerHTML = ""; return; }
+    cjkIndex.then(function (index) {
+        var results = index.search(query).map(function (r) { return { ref: storePosition[r.ref] }; });
+        show_results(results, query);
+    });
+}
+
+/* mark the matched part of a field; also escapes the text */
+function hl (value, query) {
+    return CJKIndex.highlight(String(value), query);
+}
+
+function show_results (results, query) {
+    resultsdiv.innerHTML = "";
+    var newresults = "";
+    for (var item in results) {
+        var ref = results[item].ref;
+        if (ref === undefined) { continue; }
+        var searchitem =
+            '<li class="border-bottom mb-3">'+
+            {% assign display = fields | where: 'display','true' %}{% for d in display %}{% if forloop.first %}
+            '<h4><a href="{{ "/items/" | relative_url }}' + store[ref].id + '">' + hl(store[ref][{{ fields[0].field | jsonify }}], query)  + '</a></h4>' +
+            '<p class="ms-3">';{% else %}
+            if(store[ref][{{ d.field | jsonify }}]) { searchitem += hl(store[ref][{{ d.field | jsonify }}], query) + '<br> '; }{% endif %}{% endfor %}
+        searchitem += '</p></li>';
+        newresults += searchitem;
+    }
+    var resultslist = `<h3 class="border-bottom mb-3 h5"><small>${results.length} Results found</small></h3>
+                        <ul class="list-unstyled">${newresults}</ul>`;
+    resultsdiv.innerHTML = resultslist;
+}
+
+/* set elements */
+var resultsdiv = document.getElementById('searchResults');
+var searchbox = document.getElementById('searchBox');
+
+/* init search box and get query string */
+document.addEventListener('DOMContentLoaded', function(event) {
+    var queryString = new URLSearchParams(window.location.search).get('q');
+    if (queryString) {
+        searchbox.value = queryString;
+        lunr_search();
+    }
+});
+
+</script>

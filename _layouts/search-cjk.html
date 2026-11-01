@@ -1,0 +1,46 @@
+---
+# Search page for Chinese, Japanese and Korean text (cjk-search_cb-add-on).
+# Same page as the "search" layout, searched with the cjk_index gem instead of lunr.js.
+# To use it, set "layout: search-cjk" in pages/search.md.
+# Needs the cjk_index gem and the cjk_index section in _config.yml (see the add-on README).
+layout: page
+custom-foot: js/lunr-cjk-js.html
+---
+{%- assign fields = site.data.config-search | where: 'index',true | map: 'field' -%}
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#operators">Search Options</button>
+<!-- Modal -->
+<div class="modal fade" id="operators" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title h4" id="modalLabel">Search Options</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Search finds the words you type anywhere in {{ fields | join: ", " }}, in any language, including Chinese, Japanese and Korean:</p>
+                <ul>
+                    <li>All words: separate words with spaces to find items that contain every one of them, e.g. <code>map 1911</code>.</li>
+                    <li>Part of a word: Chinese, Japanese and Korean text matches anywhere inside a title or description, e.g. <code>大學</code> finds <code>東京帝國大學</code>. The last English word matches as a beginning, e.g. <code>photo</code> finds <code>photograph</code>.</li>
+                    <li>Variant forms: old and new forms of kanji (<code>圖</code> / <code>図</code>), hiragana and katakana, and full-width and half-width letters are treated as the same.</li>
+                    <li>Small typos: English words of five or more letters allow one wrong letter.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ content }}
+
+<div class="mt-3">
+    <form role="search" id="lunrSearch" onsubmit="lunr_search(); return false;">
+        <div class="input-group input-group-lg">
+            <input aria-label="Search terms" id="searchBox" class="form-control" type="text" placeholder="Enter your search term..." >
+            <button class="btn btn-success" type="submit">
+                Search
+            </button>
+        </div>
+    </form>
+
+    <div id="searchResults" class="my-3"></div>
+</div>

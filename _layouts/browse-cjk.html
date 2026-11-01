@@ -1,0 +1,10 @@
+---
+# Browse page with filtering for Chinese, Japanese and Korean text (cjk-search_cb-add-on).
+# Same page as the "browse" layout. Only the text filter changes: it compares text the way
+# cjk_index does (old/new kanji forms, hiragana/katakana, full-width/half-width are the same).
+# To use it, set "layout: browse-cjk" in pages/browse.md.
+# Needs the cjk_index gem (see the add-on README); the browse page needs no index.
+layout: browse
+custom-foot: js/browse-cjk-js.html
+---
+{{ content }}

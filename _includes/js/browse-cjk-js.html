@@ -1,0 +1,62 @@
+{% comment %}
+
+    Browse page script for Chinese, Japanese and Korean text (cjk-search_cb-add-on).
+    Used by the "browse-cjk" layout, in place of js/browse-js.html.
+
+    It loads CollectionBuilder's own js/browse-js.html unchanged, then replaces only
+    the text comparison of the filter box: with cjk_index's rules, old and new kanji
+    forms, hiragana and katakana, full-width and half-width letters, and spaces
+    are ignored when comparing (e.g. "圖書館" finds "図書館").
+    Date ranges, sorting and the rest of the page work as before.
+
+    Needs: the cjk_index gem in the Gemfile, which writes assets/cjk-index/cjk-index.js
+    (the cjk_index section in _config.yml is needed for that file to be written).
+
+{% endcomment %}
+{% include js/browse-js.html %}
+<script src="{{ '/assets/cjk-index/cjk-index.js' | relative_url }}"></script>
+<script>
+(function () {
+    if (!window.CJKIndex) { return; }
+    var has = function (value, query) { return CJKIndex.includes(String(value), query); };
+
+    /* filter box with facets or advanced search on (default) */
+    if (typeof itemMatches === "function") {
+        var browseItemMatches = itemMatches;
+        itemMatches = function (item, field, query, startDate, endDate) {
+            /* date ranges and empty queries: unchanged */
+            if ((isDateField(field) && (startDate || endDate)) || !query || !query.trim()) {
+                return browseItemMatches(item, field, query, startDate, endDate);
+            }
+            if (field === "all") {
+                for (var k in item) {
+                    if (k !== "img" && item[k] && has(item[k], query)) { return true; }
+                }
+                return false;
+            }
+            if (item[field]) {
+                return item[field].toString().split(";").some(function (v) { return has(v.trim(), query); });
+            }
+            return false;
+        };
+    }
+    /* simple filter box (faceted-search and advanced-search both off) */
+    else if (typeof filterItems === "function") {
+        var browseFilterItems = filterItems;
+        filterItems = function (arr, q, field) {
+            if (!q || !q.trim()) { return browseFilterItems(arr, q, field); }
+            var found = arr.filter(function (item) {
+                if (field && field !== "all" && item[field]) { return has(item[field], q); }
+                for (var k in item) {
+                    if (k !== "img" && item[k] && has(item[k], q)) { return true; }
+                }
+                return false;
+            });
+            browseFilterItems(found, "", field);
+            filterTextBox.focus();
+        };
+        /* the simple script filters a hash in the URL before this runs: filter again */
+        if (typeof query === "string" && query.trim()) { filterItems(items, query, searchField); }
+    }
+})();
+</script>
