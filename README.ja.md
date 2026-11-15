@@ -38,7 +38,7 @@ CB-CSV のプロジェクトに足す:
 - CollectionBuilder-CSV のプロジェクトを始めます（今あるものでもかまいません）。
 - このアドオンを手元に落とします（「Code」>「Download ZIP」を押して展開）。
 - アドオンの中身を、「README.md」「README.ja.md」「LICENSE」を除いてすべてコピーし、CollectionBuilder-CSV のプロジェクトに貼り付けます。フォルダ構成は CB-CSV と同じなので、新しいファイルが正しい場所に加わります（今あるプロジェクトのファイルは消したり上書きしたりしないでください）。
-- 下の [既存ファイルの変更](#既存ファイルの変更changes-to-existing-files) の編集（`Gemfile`、`_config.yml`、`pages/search.md`、`pages/browse.md`）をしてから、`bundle install` を実行します。
+- 下の [既存ファイルの変更](#既存ファイルの変更changes-to-existing-files) の編集（`Gemfile`、`pages/search.md`、`pages/browse.md`）をしてから、`bundle install` を実行します。
 
 いつもどおりビルドします。ビルドの記録に `cjk_index: assets/cjk-index/search.json (39 documents)` のような行が出ます。
 
@@ -74,7 +74,12 @@ CB-CSV のプロジェクトに足す:
 
 ### 異体字の扱い
 
-`_config.yml` の `variants` で、どの字を同じとみなすかを選びます。
+既定の `variants` は `[ja]` です。どの字を同じとみなすかを変えるときは、`_config.yml` に `cjk_index:` を足します。
+
+```yaml
+cjk_index:
+  variants: [ja, zh]
+```
 
 | `variants` | 向いている場合 |
 | --- | --- |
@@ -104,24 +109,13 @@ CB-CSV のプロジェクトに足す:
    end
    ```
 
-2. `_config.yml` のどこか（たとえば末尾）に:
+   CollectionBuilder-CSV のサイト（`_data/config-search.csv` があるサイト）では、CollectionBuilder 自身の設定（`_data/config-search.csv` の `index` の項目と、`_data/theme.yml` の `search-child-objects`）から、`variants: [ja]` で `assets/cjk-index/search.json` と `assets/cjk-index/cjk-index.js` が自動で作られます。中国語の繁簡や独自の異体字表を足すときだけ `_config.yml` を編集します（[異体字の扱い](#異体字の扱い)）。
 
-   ```yaml
-   # CJK search: index for the search-cjk layout (cjk-search_cb-add-on)
-   cjk_index:
-     variants: [ja]
-     indexes:
-       - name: search
-         preset: collectionbuilder
-   ```
+2. `pages/search.md`: `layout: search` → `layout: search-cjk`
 
-   この節は両方のページに要ります。スクリプト `assets/cjk-index/cjk-index.js` もここから書き出されるためです。`collectionbuilder` の設定は、CollectionBuilder 自身の設定（`_data/config-search.csv` の `index` の項目と、`_data/theme.yml` の `search-child-objects`）を読みます。
+3. `pages/browse.md`: `layout: browse` → `layout: browse-cjk`
 
-3. `pages/search.md`: `layout: search` → `layout: search-cjk`
-
-4. `pages/browse.md`: `layout: browse` → `layout: browse-cjk`
-
-元に戻すときは、2 つの `layout:` の行を戻します。`Gemfile` と `_config.yml` の行は残しておいても害はありません。
+元に戻すときは、2 つの `layout:` の行を戻します。`Gemfile` の行は残しておいても害はありません。
 
 ## 使用例（Example）
 

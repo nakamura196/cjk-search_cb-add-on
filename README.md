@@ -38,7 +38,7 @@ Add to CB-CSV project:
 - Start a CollectionBuilder-CSV project (or use your existing one!).
 - Download this add-on to your computer (click "Code" > "Download ZIP", then unzip package).
 - Copy all contents in the add-on (all files and folders except "README.md", "README.ja.md" and "LICENSE") and paste into your CollectionBuilder-CSV project. The folder structure in this add-on should match up with your CB-CSV template, adding new files in the correct places (do not delete or overwrite anything in your existing CB project!).
-- Make the edits in [Changes to Existing Files](#changes-to-existing-files) below (`Gemfile`, `_config.yml`, `pages/search.md`, `pages/browse.md`), then run `bundle install`.
+- Make the edits in [Changes to Existing Files](#changes-to-existing-files) below (`Gemfile`, `pages/search.md`, `pages/browse.md`), then run `bundle install`.
 
 Build the site as usual. The build log shows a line like `cjk_index: assets/cjk-index/search.json (39 documents)`.
 
@@ -74,7 +74,12 @@ Most of the work is done by the rules above, but they cannot know how a word is 
 
 ### Variant Forms
 
-The `variants` setting in `_config.yml` chooses which forms are treated as the same:
+By default `variants` is `[ja]`. To change which forms are treated as the same, add `cjk_index:` to `_config.yml`:
+
+```yaml
+cjk_index:
+  variants: [ja, zh]
+```
 
 | `variants` | Use for |
 | --- | --- |
@@ -104,24 +109,13 @@ For variants of your own (local forms, 異体字 in your catalog), add a file na
    end
    ```
 
-2. `_config.yml`, anywhere (for example at the end):
+   On a CollectionBuilder-CSV site (`_data/config-search.csv` present), the plugin automatically builds `assets/cjk-index/search.json` and `assets/cjk-index/cjk-index.js` from CollectionBuilder's own settings (the `index` fields of `_data/config-search.csv`, and `search-child-objects` in `_data/theme.yml`), with `variants: [ja]`. Edit `_config.yml` only if you want to add Chinese or custom variant tables (see [Variant Forms](#variant-forms)).
 
-   ```yaml
-   # CJK search: index for the search-cjk layout (cjk-search_cb-add-on)
-   cjk_index:
-     variants: [ja]
-     indexes:
-       - name: search
-         preset: collectionbuilder
-   ```
+2. `pages/search.md`: `layout: search` → `layout: search-cjk`
 
-   This section is needed by both pages: it also writes the script `assets/cjk-index/cjk-index.js`. The `collectionbuilder` preset reads CollectionBuilder's own settings (the `index` fields of `_data/config-search.csv`, and `search-child-objects` in `_data/theme.yml`).
+3. `pages/browse.md`: `layout: browse` → `layout: browse-cjk`
 
-3. `pages/search.md`: `layout: search` → `layout: search-cjk`
-
-4. `pages/browse.md`: `layout: browse` → `layout: browse-cjk`
-
-To switch back, change the two `layout:` lines back. The Gemfile and `_config.yml` lines do no harm if left.
+To switch back, change the two `layout:` lines back. The `Gemfile` lines do no harm if left.
 
 ## Example
 
